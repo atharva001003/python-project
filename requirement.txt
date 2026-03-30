@@ -1,0 +1,5 @@
+flask
+flask-pymongo
+bcrypt
+python-dotenv
+pymongo
