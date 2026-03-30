@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - AI Event Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f5f7fb; }
+        .navbar {
+            background: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .logo { font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 1.5rem; }
+        .nav-links a { text-decoration: none; color: #4b5563; font-weight: 500; }
+        .nav-links a:hover, .nav-links a.active { color: #667eea; }
+        .user-info { display: flex; align-items: center; gap: 1rem; }
+        .logout-btn { background: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.75rem; text-decoration: none; }
+        .container { max-width: 800px; margin: 2rem auto; padding: 0 1.5rem; }
+        .profile-card {
+            background: white; border-radius: 1rem; padding: 2rem; text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .avatar { font-size: 4rem; margin-bottom: 1rem; }
+        .stats {
+            display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0;
+        }
+        .stat { text-align: center; }
+        .stat-number { font-size: 1.8rem; font-weight: 700; color: #667eea; }
+        .stat-label { font-size: 0.8rem; color: #6b7280; }
+        .export-btn {
+            background: #667eea; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 2rem;
+            cursor: pointer; font-weight: 500; margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🎉 AI Event Planner</div>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/events">Events</a>
+            <a href="/tasks">Tasks</a>
+            <a href="/ai-assistant">AI Assistant</a>
+            <a href="/profile" class="active">Profile</a>
+        </div>
+        <div class="user-info">
+            <span><i class="fas fa-user-circle"></i> {{ user.username }}</span>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="profile-card">
+            <div class="avatar">👤</div>
+            <h2>{{ user.username }}</h2>
+            <p>{{ user.email }}</p>
+            <p>{{ user.phone }}</p>
+            <p>Member since {{ user.created_at.strftime('%B %Y') }}</p>
+            <div class="stats" id="stats">
+                <!-- stats loaded via JS -->
+            </div>
+            <button class="export-btn" id="exportBtn">Export Data (JSON)</button>
+        </div>
+    </div>
+    <script>
+        fetch('/api/ai/insights')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('stats').innerHTML = `
+                    <div class="stat"><div class="stat-number">${data.total_events}</div><div>Events</div></div>
+                    <div class="stat"><div class="stat-number">${data.total_tasks}</div><div>Tasks</div></div>
+                    <div class="stat"><div class="stat-number">${data.completion_rate}%</div><div>Completion</div></div>
+                `;
+            });
+        document.getElementById('exportBtn').addEventListener('click', async () => {
+            const res = await fetch('/api/ai/insights');
+            const stats = await res.json();
+            const eventsRes = await fetch('/events');
+            const tasksRes = await fetch('/tasks');
+            const eventsHtml = await eventsRes.text();
+            const tasksHtml = await tasksRes.text();
+            const parser = new DOMParser();
+            const eventsDoc = parser.parseFromString(eventsHtml, 'text/html');
+            const tasksDoc = parser.parseFromString(tasksHtml, 'text/html');
+            const events = Array.from(eventsDoc.querySelectorAll('.event-card')).map(card => ({
+                title: card.querySelector('.event-title')?.innerText,
+                date: card.querySelector('.event-datetime')?.innerText,
+                attendees: card.querySelector('.event-detail:nth-of-type(2)')?.innerText
+            }));
+            const tasks = Array.from(tasksDoc.querySelectorAll('.task-item')).map(item => ({
+                text: item.querySelector('.task-text')?.innerText,
+                priority: item.querySelector('.task-priority')?.innerText
+            }));
+            const exportData = { stats, events, tasks };
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'my_ai_planner_data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>

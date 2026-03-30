@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Event Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        /* Glassmorphic Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar h1 {
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #e0e0ff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            background: rgba(168, 85, 247, 0.3);
+            color: white;
+        }
+
+        .username {
+            background: rgba(168, 85, 247, 0.2);
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 24px;
+        }
+
+        /* Welcome Card */
+        .welcome {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 32px 36px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .welcome h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .welcome p {
+            color: #b9b9e6;
+            margin-top: 8px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 28px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(168, 85, 247, 0.15);
+            border-color: #a855f7;
+        }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #c084fc, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .stat-label {
+            color: #cbd5e1;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        /* Sections Grid */
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 30px;
+            margin-bottom: 48px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section h3 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #a855f7;
+            display: inline-block;
+        }
+
+        .event-item, .task-item {
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .event-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .event-date {
+            font-size: 0.75rem;
+            color: #a78bfa;
+            margin-top: 4px;
+        }
+
+        .task-priority {
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+        .priority-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+        .priority-low {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        .view-all {
+            display: inline-block;
+            margin-top: 18px;
+            color: #c084fc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #94a3b8;
+        }
+
+        /* Tips Section */
+        .tips-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 28px;
+            padding: 32px;
+            margin-top: 20px;
+        }
+
+        .tips-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .tip-card {
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            border-left: 3px solid #a855f7;
+        }
+
+        .tip-card i {
+            font-size: 2rem;
+            color: #c084fc;
+            margin-bottom: 12px;
+        }
+
+        .tip-card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .tip-card p {
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        /* AI Chat Button */
+        .ai-chat-button {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        .ai-chat-button:hover {
+            transform: scale(1.08);
+        }
+
+        .ai-chat-button i {
+            font-size: 28px;
+            color: white;
+        }
+
+        /* Chat Widget */
+        .chat-widget {
+            position: fixed;
+            bottom: 105px;
+            right: 28px;
+            width: 380px;
+            height: 550px;
+            background: rgba(15, 15, 35, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1001;
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s;
+        }
+
+        .chat-widget.hidden {
+            display: none;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header span {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-chat {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .close-chat:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .user-message {
+            background: #3b82f6;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .ai-message {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            align-self: flex-start;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.4);
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 12px 16px;
+            border-radius: 40px;
+            color: white;
+            outline: none;
+        }
+
+        .chat-input-area input::placeholder {
+            color: #94a3b8;
+        }
+
+        .chat-input-area button {
+            background: #a855f7;
+            border: none;
+            border-radius: 40px;
+            width: 45px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chat-input-area button:hover {
+            background: #8b5cf6;
+        }
+
+        @media (max-width: 650px) {
+            .chat-widget {
+                width: 320px;
+                right: 16px;
+                bottom: 85px;
+            }
+            .navbar {
+                flex-direction: column;
+                text-align: center;
+            }
+            .nav-links {
+                justify-content: center;
+            }
+            .sections-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <h1><i class="fas fa-calendar-alt"></i> AI Event Planner</h1>
+    <div class="nav-links">
+        <a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="/events"><i class="fas fa-calendar-week"></i> Events</a>
+        <a href="/tasks"><i class="fas fa-tasks"></i> Tasks</a>
+        <a href="/ai-assistant"><i class="fas fa-robot"></i> AI Assistant</a>
+        <span class="username"><i class="fas fa-user-circle"></i> {{ user.username }}</span>
+        <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="welcome">
+        <h2>Welcome back, {{ user.username }}! 👋</h2>
+        <p>Your AI-powered event planning dashboard — smart insights, real-time updates, and intelligent assistance.</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_events }}</div>
+            <div class="stat-label">Total Events</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ upcoming_count }}</div>
+            <div class="stat-label">Upcoming Events</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ pending_tasks }}</div>
+            <div class="stat-label">Pending Tasks</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ total_attendees }}</div>
+            <div class="stat-label">Total Attendees</div>
+        </div>
+    </div>
+
+    <div class="sections-grid">
+        <div class="section">
+            <h3><i class="fas fa-calendar-alt"></i> 📅 Upcoming Events</h3>
+            {% if events %}
+                {% for event in events %}
+                <div class="event-item">
+                    <div>
+                        <div class="event-title">{{ event.title }}</div>
+                        <div class="event-date">{{ event.date_time.strftime('%b %d, %Y at %I:%M %p') }}</div>
+                    </div>
+                    <div><i class="fas fa-users"></i> {{ event.attendees }}</div>
+                </div>
+                {% endfor %}
+                <a href="/events" class="view-all">View all events →</a>
+            {% else %}
+                <div class="empty-message">No events yet. Create your first event!</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h3><i class="fas fa-clipboard-list"></i> ✅ Pending Tasks</h3>
+            {% if tasks %}
+                {% for task in tasks %}
+                <div class="task-item">
+                    <div class="task-text">{{ task.text }}</div>
+                    <span class="task-priority priority-{{ task.priority }}">{{ task.priority|upper }}</span>
+                </div>
+                {% endfor %}
+                <a href="/tasks" class="view-all">View all tasks →</a>
+            {% else %}
+                <div class="empty-message">No pending tasks. Great job!</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="tips-section">
+        <h3><i class="fas fa-lightbulb"></i> ✨ Event Planning Tips & Ideas</h3>
+        <div class="tips-grid">
+            <div class="tip-card">
+                <i class="fas fa-chart-line"></i>
+                <h4>Smart Budgeting</h4>
+                <p>Keep 15-20% contingency fund. Compare vendors to save up to 30%.</p>
+            </div>
+            <div class="tip-card">
+                <i class="fas fa-map-marker-alt"></i>
+                <h4>Venue Selection</h4>
+                <p>Visit venues at event time, check lighting & acoustics. Negotiate off-peak rates.</p>
+            </div>
+            <div class="tip-card">
+                <i class="fas fa-clock"></i>
+                <h4>Timeline Mastery</h4>
+                <p>Work backwards: 6 months venue, 3 months vendors, 1 month final confirmations.</p>
+            </div>
+            <div class="tip-card">
+                <i class="fas fa-microphone"></i>
+                <h4>Engage Attendees</h4>
+                <p>Add interactive zones, live polls, and personalized experiences for better retention.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating AI Chat Button -->
+<div class="ai-chat-button" id="aiChatBtn">
+    <i class="fas fa-robot"></i>
+</div>
+
+<!-- AI Chat Widget -->
+<div class="chat-widget hidden" id="chatWidget">
+    <div class="chat-header">
+        <span><i class="fas fa-brain"></i> EVE - AI Assistant</span>
+        <button class="close-chat" id="closeChatBtn">&times;</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        <div class="message ai-message">🎯 Hey! I'm EVE, your AI event planner. Ask me anything about event planning, scheduling, or get smart tips! Try: "Best time for event?" or "Suggest ideas"</div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Ask me anything about event planning...">
+        <button id="sendChatBtn"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<script>
+    // Get elements
+    const chatBtn = document.getElementById('aiChatBtn');
+    const chatWidget = document.getElementById('chatWidget');
+    const closeChat = document.getElementById('closeChatBtn');
+    const sendBtn = document.getElementById('sendChatBtn');
+    const chatInput = document.getElementById('chatInput');
+    const chatMessages = document.getElementById('chatMessages');
+
+    // Function to open chat
+    function openChat() {
+        chatWidget.classList.remove('hidden');
+        setTimeout(() => chatInput.focus(), 100);
+    }
+
+    // Function to close chat
+    function closeChatWidget() {
+        chatWidget.classList.add('hidden');
+    }
+
+    // Open chat when clicking robot button
+    chatBtn.onclick = openChat;
+    
+    // Close chat when clicking X button
+    closeChat.onclick = closeChatWidget;
+
+    // Close chat when pressing ESC key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            if (!chatWidget.classList.contains('hidden')) {
+                closeChatWidget();
+            }
+        }
+    });
+
+    // Optional: Click outside to close (tap on overlay)
+    document.addEventListener('click', function(event) {
+        const isClickOnChat = chatWidget.contains(event.target);
+        const isClickOnButton = chatBtn.contains(event.target);
+        
+        if (!isClickOnChat && !isClickOnButton && !chatWidget.classList.contains('hidden')) {
+            closeChatWidget();
+        }
+    });
+
+    // Send message to backend AI
+    async function sendMessage() {
+        const msg = chatInput.value.trim();
+        if (!msg) return;
+
+        addMessage(msg, true);
+        chatInput.value = '';
+
+        const typingId = showTyping();
+
+        try {
+            const response = await fetch('/api/ai/suggest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: msg })
+            });
+            const data = await response.json();
+            removeTyping(typingId);
+            addMessage(data.response || "I'm here to help! Ask me about event planning!", false);
+        } catch (err) {
+            removeTyping(typingId);
+            addMessage("Sorry, I'm having trouble connecting. Please try again.", false);
+        }
+    }
+
+    function addMessage(text, isUser) {
+        const div = document.createElement('div');
+        div.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+        div.textContent = text;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showTyping() {
+        const id = 'typing-' + Date.now();
+        const div = document.createElement('div');
+        div.id = id;
+        div.className = 'message ai-message';
+        div.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> EVE is thinking...';
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return id;
+    }
+
+    function removeTyping(id) {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    }
+
+    sendBtn.onclick = sendMessage;
+    chatInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+</script>
+
+</body>
+</html>

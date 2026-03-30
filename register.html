@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - AI Event Planner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .register-container {
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .card-header .logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .card-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .card-body {
+            padding: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #f8f9fa;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+        
+        .otp-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 2px dashed #667eea;
+            display: none;
+        }
+        
+        .otp-section.active {
+            display: block;
+        }
+        
+        .send-otp-btn, .verify-otp-btn, .register-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .send-otp-btn, .verify-otp-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .register-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .send-otp-btn:hover, .verify-otp-btn:hover, .register-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .send-otp-btn:disabled, .verify-otp-btn:disabled, .register-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .resend-section {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
+        
+        .resend-link {
+            color: #667eea;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .timer {
+            color: #ff9800;
+            font-weight: bold;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-left: 4px solid #28a745;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .verified-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .password-strength {
+            margin-top: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .strength-weak { color: #dc3545; }
+        .strength-medium { color: #ff9800; }
+        .strength-strong { color: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <div class="card-header">
+                <div class="logo">🎉</div>
+                <h1>Create Account</h1>
+                <p>Join AI Event Planner today</p>
+            </div>
+            
+            <div class="card-body">
+                <div id="errorMsg" class="error" style="display: none;"></div>
+                <div id="successMsg" class="success" style="display: none;"></div>
+                
+                <div class="input-group">
+                    <label>Username *</label>
+                    <input type="text" id="username" placeholder="Choose a username" autocomplete="off">
+                </div>
+                
+                <div class="input-group">
+                    <label>Email *</label>
+                    <input type="email" id="email" placeholder="Enter your email address" autocomplete="off">
+                </div>
+                
+                <div class="input-group">
+                    <label>Phone Number *</label>
+                    <input type="tel" id="phone" placeholder="Enter Indian mobile number (e.g., 9876543210)" autocomplete="off">
+                    <small style="color: #666; font-size: 12px;">📱 Check TERMINAL for OTP</small>
+                </div>
+                
+                <div class="input-group">
+                    <label>Password *</label>
+                    <input type="password" id="password" placeholder="Create a strong password" onkeyup="checkPasswordStrength()">
+                    <div class="password-strength" id="passwordStrength"></div>
+                </div>
+                
+                <div class="input-group">
+                    <label>Confirm Password *</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm your password">
+                </div>
+                
+                <!-- OTP Section -->
+                <div class="otp-section" id="otpSection">
+                    <div class="input-group">
+                        <label>Enter OTP <span id="verifiedBadge" class="verified-badge" style="display: none;">✓ Verified</span></label>
+                        <input type="text" id="otpCode" placeholder="Enter 6-digit OTP" maxlength="6" autocomplete="off">
+                    </div>
+                    <button type="button" class="verify-otp-btn" id="verifyOtpBtn" onclick="verifyOTP()">✓ Verify OTP</button>
+                    <div class="resend-section">
+                        <span>Didn't receive OTP? </span>
+                        <span class="resend-link" id="resendLink" onclick="sendOTP()">Resend OTP</span>
+                        <span id="timer" class="timer"></span>
+                    </div>
+                </div>
+                
+                <button type="button" class="send-otp-btn" id="sendOtpBtn" onclick="sendOTP()">📱 Send Verification OTP</button>
+                <button type="button" class="register-btn" id="registerBtn" onclick="createAccount()" disabled>Create Account</button>
+                
+                <div class="login-link">
+                    Already have an account? <a href="/login">Login here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let isOtpVerified = false;
+        let timerInterval = null;
+        let secondsLeft = 0;
+        
+        function showMessage(msg, type) {
+            const errorDiv = document.getElementById('errorMsg');
+            const successDiv = document.getElementById('successMsg');
+            
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            if (type === 'error') {
+                errorDiv.innerHTML = msg;
+                errorDiv.style.display = 'block';
+            } else if (type === 'success') {
+                successDiv.innerHTML = msg;
+                successDiv.style.display = 'block';
+            }
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        function checkPasswordStrength() {
+            const password = document.getElementById('password').value;
+            const strengthDiv = document.getElementById('passwordStrength');
+            
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]+/)) strength++;
+            if (password.match(/[A-Z]+/)) strength++;
+            if (password.match(/[0-9]+/)) strength++;
+            
+            if (password.length === 0) {
+                strengthDiv.innerHTML = '';
+            } else if (strength <= 2) {
+                strengthDiv.innerHTML = '⚠️ Weak password';
+                strengthDiv.className = 'password-strength strength-weak';
+            } else if (strength <= 3) {
+                strengthDiv.innerHTML = '👍 Medium password';
+                strengthDiv.className = 'password-strength strength-medium';
+            } else {
+                strengthDiv.innerHTML = '✅ Strong password!';
+                strengthDiv.className = 'password-strength strength-strong';
+            }
+        }
+        
+        async function sendOTP() {
+            const phone = document.getElementById('phone').value;
+            
+            if (!phone) {
+                showMessage('Please enter your phone number first', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('sendOtpBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> Sending...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/send-otp', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({phone: phone})
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('otpSection').classList.add('active');
+                    showMessage(data.message, 'success');
+                    startTimer(60);
+                    document.getElementById('otpCode').focus();
+                } else {
+                    showMessage(data.error, 'error');
+                }
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            } catch (error) {
+                showMessage('Error sending OTP. Please try again.', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        async function verifyOTP() {
+            const phone = document.getElementById('phone').value;
+            const otp = document.getElementById('otpCode').value;
+            
+            if (!otp || otp.length !== 6) {
+                showMessage('Please enter the 6-digit OTP', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('verifyOtpBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> Verifying...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/verify-otp', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({phone: phone, otp: otp})
+                });
+                
+                const data = await response.json();
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+                if (response.ok && data.success) {
+                    isOtpVerified = true;
+                    document.getElementById('registerBtn').disabled = false;
+                    document.getElementById('verifiedBadge').style.display = 'inline-block';
+                    showMessage('✅ Phone verified! You can now create account.', 'success');
+                    
+                    document.getElementById('otpCode').disabled = true;
+                    document.getElementById('verifyOtpBtn').disabled = true;
+                    document.getElementById('sendOtpBtn').disabled = true;
+                    
+                    if (timerInterval) {
+                        clearInterval(timerInterval);
+                    }
+                } else {
+                    showMessage(data.error, 'error');
+                    document.getElementById('otpCode').value = '';
+                    document.getElementById('otpCode').focus();
+                }
+            } catch (error) {
+                showMessage('Error verifying OTP', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        function startTimer(seconds) {
+            secondsLeft = seconds;
+            const timerElement = document.getElementById('timer');
+            const resendLink = document.getElementById('resendLink');
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            resendLink.style.pointerEvents = 'none';
+            resendLink.style.opacity = '0.5';
+            
+            timerInterval = setInterval(() => {
+                if (secondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerElement.textContent = '';
+                    resendLink.style.pointerEvents = 'auto';
+                    resendLink.style.opacity = '1';
+                } else {
+                    timerElement.textContent = ` (${secondsLeft}s)`;
+                    secondsLeft--;
+                }
+            }, 1000);
+        }
+        
+        async function createAccount() {
+            if (!isOtpVerified) {
+                showMessage('Please verify your phone number with OTP first', 'error');
+                return;
+            }
+            
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!username || !email || !phone || !password) {
+                showMessage('All fields are required', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('registerBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> Creating account...';
+            btn.disabled = true;
+            
+            try {
+                console.log("Sending registration data:", {username, email, phone, password});
+                
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, email, phone, password})
+                });
+                
+                const data = await response.json();
+                console.log("Response:", data);
+                
+                if (response.ok && data.success) {
+                    showMessage('Account created successfully! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '/dashboard';
+                    }, 1000);
+                } else {
+                    showMessage(data.error || 'Registration failed', 'error');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error("Registration error:", error);
+                showMessage('Error registering. Please try again.', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        // Auto-verify when 6 digits entered
+        document.getElementById('otpCode').addEventListener('input', function(e) {
+            if (this.value.length === 6 && !isOtpVerified) {
+                verifyOTP();
+            }
+        });
+    </script>
+</body>
+</html>
